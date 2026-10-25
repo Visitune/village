@@ -2,6 +2,11 @@
 
 Lis ce fichier en entier, puis exécute les étapes DANS L'ORDRE. Ne saute aucune étape.
 
+## IMPORTANT — ce qu'il ne faut PAS faire
+- Ne produis PAS de bloc `const CONFIG = {...}`. Cette méthode est abandonnée (dossier `ancienne-voie-moteur/`, à ignorer).
+- N'utilise PAS d'autres noms de clés que celles de `MAPPING`.
+- Ta réponse finale est un fichier HTML complet qui contient `const MAPPING`, pas un petit bloc de réglages.
+
 ## Le but
 L'utilisateur t'a donné un fichier Excel/CSV (n'importe lequel). Tu dois lui livrer UN SEUL fichier `dashboard.html` (HTML + CSS + JavaScript, une page, sans framework). Quand l'utilisateur ouvre ce fichier et y glisse un Excel de même structure, un tableau de bord se construit tout seul.
 
@@ -64,7 +69,13 @@ const MAPPING={title:'Ventes',accent:'#7c3aed',target:85,sheet:null,headerRow:nu
 - N'écris pas de données du fichier de l'utilisateur en dur dans le HTML : l'application doit marcher avec d'autres fichiers de même structure.
 
 ## Si l'utilisateur demande une vue en plus (graphique, indicateur)
-Ne réécris pas tout. Suis `METHODE-CODAGE-GUIDE.md` : une seule fonction ajoutée à la fois, avec son emplacement exact dans le modèle. Les données utiles sont dans `S.m` : `S.m.ev` (résultats : `st` C/NC/OBS/NA, `q`, `dims`, `date`, `note`), `S.m.data` (lignes brutes), `S.m.cols`, `S.m.dims`.
+Ne réécris pas tout. Suis `ancienne-voie-moteur/METHODE-CODAGE-GUIDE.md` (seulement sa méthode « une fonction à la fois ») : une seule fonction ajoutée à la fois, avec son emplacement exact dans le modèle. Les données utiles sont dans `S.m` : `S.m.ev` (résultats : `st` C/NC/OBS/NA, `q`, `dims`, `date`, `note`), `S.m.data` (lignes brutes), `S.m.cols`, `S.m.dims`.
 
 ## Si le dashboard affiche mal le fichier
 Demande à l'utilisateur de coller le message d'erreur (touche F12 → Console) ou de décrire ce qui est faux, puis corrige UNIQUEMENT le bloc MAPPING.
+
+## Contrôle avant d'envoyer (réponds OUI à tout, sinon corrige)
+- Ma réponse commence par `<!DOCTYPE html>` et finit par `</html>`.
+- Elle contient `const MAPPING={` et ne contient pas `const CONFIG`.
+- Elle contient la ligne `<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/...">` du modèle.
+- Aucune partie du modèle n'est remplacée par « ... » ou « reste identique ».
