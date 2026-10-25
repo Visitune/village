@@ -81,6 +81,7 @@ const KNOWN={
  NA:['n/a','na','n.a.','non applicable','sans objet','non audite','non evalue']};
 function statusOf(v){const n=norm(v);if(!n)return null;
  for(const k of ['C','NC','OBS','NA']){if(((MAPPING.statusWords||{})[k]||[]).map(norm).includes(n)||KNOWN[k].includes(n))return k}return null}
+const TITRE_AUTO=MAPPING.title==='Tableau de bord';
 const S={sheets:{},cur:null,filter:null,q:'',sort:null,page:0,theme:'light',m:null};
 
 /* ---------- lecture du fichier ---------- */
@@ -230,6 +231,7 @@ function render(){
 function load(name){S.cur=name;S.filter=null;S.q='';S.sort=null;S.page=0;S.m=build(name);
  const sel=$('#sheetSel');const names=Object.keys(S.sheets);sel.style.display=names.length>1?'':'none';sel.innerHTML=names.map(n=>`<option ${n===name?'selected':''}>${esc(n)}</option>`).join('');render()}
 async function handleFiles(files){
+ if(TITRE_AUTO&&files[0]){const t=files[0].name.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ');$('#ttl').textContent=t;document.title=t}
  files=[...files].filter(f=>/\.(xlsx|xlsm|xls|csv)$/i.test(f.name));if(!files.length){alert('Aucun fichier Excel/CSV détecté');return}
  S.sheets={};for(const f of files){try{await readFile(f)}catch(e){console.error(e);alert('Lecture impossible : '+f.name)}}
  const names=Object.keys(S.sheets);if(!names.length){alert('Aucune feuille avec des données');return}

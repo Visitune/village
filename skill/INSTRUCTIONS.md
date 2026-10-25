@@ -3,7 +3,7 @@
 Lis ce fichier en entier, puis exécute les étapes DANS L'ORDRE. Ne saute aucune étape.
 
 ## IMPORTANT — ce qu'il ne faut PAS faire
-- Ne produis PAS de bloc `const CONFIG = {...}`. Cette méthode est abandonnée (dossier `ancienne-voie-moteur/`, à ignorer).
+- Ne produis PAS de bloc `const CONFIG = {...}`. Cette méthode est abandonnée (dossier `archive/`, à ignorer).
 - N'utilise PAS d'autres noms de clés que celles de `MAPPING`.
 - Ta réponse finale est un fichier HTML complet qui contient `const MAPPING`, pas un petit bloc de réglages.
 
@@ -11,10 +11,10 @@ Lis ce fichier en entier, puis exécute les étapes DANS L'ORDRE. Ne saute aucun
 L'utilisateur t'a donné un fichier Excel/CSV (n'importe lequel). Tu dois lui livrer UN SEUL fichier `dashboard.html` (HTML + CSS + JavaScript, une page, sans framework). Quand l'utilisateur ouvre ce fichier et y glisse un Excel de même structure, un tableau de bord se construit tout seul.
 
 ## Règle d'or : tu ne pars JAMAIS d'une page blanche
-Un modèle complet et déjà testé existe : **`modele/spa-modele.html`** de ce dépôt (https://github.com/Visitune/village).
+Un modèle complet et déjà testé existe : **`dashboard.html`** de ce dépôt (https://github.com/Visitune/village).
 Il détecte tout seul les colonnes (dates, nombres, catégories, statuts), construit les graphiques et gère le filtrage, la recherche, le tri, l'export CSV, l'impression et le thème sombre.
 Ton travail : **copier ce modèle tel quel et ne modifier que le bloc `MAPPING`** (≈15 lignes, repéré par les commentaires `MAPPING`).
-Si tu n'arrives pas à lire le modèle depuis GitHub, demande à l'utilisateur de te joindre `modele/spa-modele.html` ; n'invente pas un autre code.
+Si tu n'arrives pas à lire le modèle depuis GitHub, demande à l'utilisateur de te joindre `dashboard.html` ; n'invente pas un autre code.
 
 ## Étape 1 — Lire le fichier (ne produis encore aucun code)
 Note, sans rien deviner :
@@ -69,7 +69,7 @@ const MAPPING={title:'Ventes',accent:'#7c3aed',target:85,sheet:null,headerRow:nu
 - N'écris pas de données du fichier de l'utilisateur en dur dans le HTML : l'application doit marcher avec d'autres fichiers de même structure.
 
 ## Si l'utilisateur demande une vue en plus (graphique, indicateur)
-Ne réécris pas tout. Suis `ancienne-voie-moteur/METHODE-CODAGE-GUIDE.md` (seulement sa méthode « une fonction à la fois ») : une seule fonction ajoutée à la fois, avec son emplacement exact dans le modèle. Les données utiles sont dans `S.m` : `S.m.ev` (résultats : `st` C/NC/OBS/NA, `q`, `dims`, `date`, `note`), `S.m.data` (lignes brutes), `S.m.cols`, `S.m.dims`.
+Ne réécris pas tout. Suis `skill/BONNES-PRATIQUES.md` (seulement sa méthode « une fonction à la fois ») : une seule fonction ajoutée à la fois, avec son emplacement exact dans le modèle. Les données utiles sont dans `S.m` : `S.m.ev` (résultats : `st` C/NC/OBS/NA, `q`, `dims`, `date`, `note`), `S.m.data` (lignes brutes), `S.m.cols`, `S.m.dims`.
 
 ## Si le dashboard affiche mal le fichier
 Demande à l'utilisateur de coller le message d'erreur (touche F12 → Console) ou de décrire ce qui est faux, puis corrige UNIQUEMENT le bloc MAPPING.
