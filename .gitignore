@@ -1,0 +1,13 @@
+# Fichiers de travail locaux (ne pas pousser)
+audit-insight-*.html
+
+# Instructions de travail internes (citent le fichier source, ne pas pousser)
+INSTRUCTIONS-PORT-*.md
+
+# OS / editeurs
+.DS_Store
+Thumbs.db
+*.log
+
+# Node
+node_modules/
