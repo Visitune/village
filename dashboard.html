@@ -34,6 +34,9 @@ svg{display:block;flex:none}
 .btn.pri:hover{filter:brightness(1.08);color:var(--accent-ink)}
 .btn.sm{padding:5px 10px;font-size:12px;border-radius:9px}
 .btn.ghost{box-shadow:none;background:transparent}
+.helpbtn{width:34px;height:34px;border-radius:50%;justify-content:center;padding:0;font-size:15px;font-weight:800;line-height:1}
+.sidefoot button:disabled{opacity:.45;cursor:not-allowed;color:var(--nc)}
+.sidefoot button:disabled:hover{background:none;color:var(--nc)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px 20px;min-width:0}
 .card h3{margin:0 0 2px;font-size:14px;letter-spacing:.01em}
 .card .sub{color:var(--mute);font-size:12px;margin-bottom:12px}
@@ -290,11 +293,13 @@ const IC={
 const icon=(n,s=18)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${IC[n]||''}</svg>`;
 
 /* ===== État ===== */
-const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},remove(k){try{localStorage.removeItem(k)}catch(e){}}};
+const BRAND_DEF=()=>({name:'Safety Culture',logo:'',accent:'#0f766e',site:'',target:85});
+const OP_DEF=()=>({title:'',subtitle:'',message:null,nb:6,blocks:{trend:true,sections:true,crit:true,pins:true,message:true}});
 const S={audits:[],view:'dash',tpl:null,sel:new Set(),sec:null,ann:{},ncq:'',ncst:'all',open:null,
- brand:Object.assign({name:'Safety Culture',logo:'',accent:'#0f766e',site:'',target:85},LS.get('ai_brand',{})),
+ brand:Object.assign(BRAND_DEF(),LS.get('ai_brand',{})),
  theme:LS.get('ai_theme',(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'),
- op:{title:'',subtitle:'',message:null,nb:6,blocks:{trend:true,sections:true,crit:true,pins:true,message:true}}};
+ op:OP_DEF()};
 
 /* ===== Lecture des fichiers ===== */
 const META=new Set(['auditid','auditname','templateid','templatename','author','owner','start','lastupdate','completed','score','totaltotal','totalscore']);
@@ -497,7 +502,7 @@ function actionStats(c){
 function emptyState(){
  return`<div class="drop" id="dz"><div class="ico">${icon('upload',30)}</div><h2>Déposez vos exports Excel d'audit</h2>
  <p>Un ou plusieurs fichiers .xlsx issus de votre application d'audit. Tout reste dans votre navigateur : rien n'est envoyé sur Internet.</p>
- <button class="btn pri" data-act="pick">${icon('upload',16)} Choisir des fichiers</button> <button class="btn" data-act="demo">${icon('spark',16)} Démo</button></div>`}
+ <button class="btn pri" data-act="pick">${icon('upload',16)} Choisir des fichiers</button> <button class="btn" data-act="demo">${icon('spark',16)} Démo</button> <button class="btn ghost sm" data-act="help">Comment ça marche ?</button></div>`}
 
 views.audits=function(){
  const c=ctx();if(!c.all.length)return emptyState();const P=curPal();
@@ -637,7 +642,7 @@ function pickFiles(){const i=document.createElement('input');i.type='file';i.acc
 /* ===== Session / marque / démo ===== */
 function saveSession(){dl(new Blob([JSON.stringify({v:1,audits:S.audits,ann:S.ann,sel:[...S.sel],tpl:S.tpl,op:S.op})],{type:'application/json'}),`session-audits-${new Date().toISOString().slice(0,10)}.json`)}
 function loadSession(file){file.text().then(t=>{try{const d=JSON.parse(t);S.audits=d.audits.map(a=>{analyse(a);a._seen=1;return a});S.ann=d.ann||{};S.sel=new Set(d.sel||S.audits.map(a=>a.id));S.tpl=d.tpl||S.audits[0]?.tpl;if(d.op)S.op=Object.assign(S.op,d.op);render();toast('Session chargée')}catch(e){toast('Fichier de session invalide')}})}
-function openModal(h){closeModal();const m=document.createElement('div');m.className='modalbg';m.id='modal';m.innerHTML=`<div class="modal">${h}</div>`;m.addEventListener('mousedown',e=>{if(e.target===m)closeModal()});document.body.appendChild(m)}
+function openModal(h){closeModal();const m=document.createElement('div');m.className='modalbg';m.id='modal';m.innerHTML=`<div class="modal" role="dialog" aria-modal="true">${h}</div>`;m.addEventListener('mousedown',e=>{if(e.target===m)dismissModal()});document.body.appendChild(m);const f=m.querySelector('.modal button');if(f)setTimeout(()=>f.focus(),0)}
 function closeModal(){$('#modal')?.remove()}
 function brandModal(){openModal(`<h2>Identité visuelle</h2>
  <div class="fld"><label>Nom de l'entreprise</label><input type="text" id="bn" value="${esc(S.brand.name)}"></div>
@@ -664,6 +669,35 @@ function demo(){
   const a={id:id,name:fmtD(dt,true)+' / Démo',tpl:'demo',tplName:'Modèle de démonstration',author:'Démo',auditor:who[n],date:dt,start:dt,end:dt+7800000,src:'données fictives',items:items};analyse(a);a._seen=1;S.audits.push(a);S.sel.add(id)});
  S.tpl='demo';S.view='dash';render();toast('Démo chargée : 4 audits fictifs')}
 
+/* ===== Aide et réinitialisation ===== */
+const HELP=[
+ {t:'À quoi ça sert',h:'Cet outil transforme les exports Excel de votre application d\'audit (format Safety Culture) en tableau de bord. Il montre la conformité, les points récurrents et sert à suivre les actions correctives jusqu\'à leur clôture.'},
+ {t:'D\'où viennent les données',h:'Dans votre application d\'audit, exportez les rapports au format Excel (.xlsx), puis glissez un ou plusieurs fichiers dans la page. Tout est lu localement dans votre navigateur. Un même fichier chargé deux fois est ignoré.'},
+ {t:'Ce que vous pouvez faire',h:'<ul style="margin:0;padding-left:18px"><li><b>Tableau de bord</b> : conformité, tendance et points récurrents de la période.</li><li><b>Audits</b> : rapports chargés et détail des constats.</li><li><b>Non-conformités &amp; plan d\'actions</b> : statut, responsable, action et photos pour chaque point.</li><li><b>One-pager</b> : synthèse A4 prête à exporter en PDF ou JPEG.</li></ul><p style="margin:10px 0 0">Cliquez une barre de section pour filtrer, utilisez l\'épingle ★ pour retenir un point dans le one-pager et ajoutez des photos aux actions.</p>'},
+ {t:'Sauvegarder votre travail',h:'L\'outil ne conserve rien sur un serveur. Utilisez « Enregistrer la session » pour obtenir un fichier à rouvrir plus tard avec « Ouvrir une session ». Fermer l\'onglet sans enregistrer fait perdre les actions saisies.'},
+ {t:'Confidentialité et changement de projet',h:'Tout reste dans votre navigateur : rien n\'est envoyé sur Internet. « Nouveau projet » efface tout pour passer à un autre type de rapport. Le bouton « Démo » charge des audits fictifs pour essayer.'}
+];
+let helpOpen=false,helpStep=0;
+function helpSeen(){LS.set('ai_seen_help','1')}
+function dismissModal(){closeModal();if(helpOpen){helpSeen();helpOpen=false}}
+function helpModal(i){helpStep=Math.max(0,Math.min(HELP.length-1,+i||0));const s=HELP[helpStep],last=helpStep===HELP.length-1;helpOpen=true;
+ openModal(`<h2>${s.t}</h2><div style="color:var(--mute);font-size:14px;line-height:1.6">${s.h}</div>
+ <div style="display:flex;gap:6px;justify-content:center;margin:18px 0 4px" aria-hidden="true">${HELP.map((_,k)=>`<span style="width:8px;height:8px;border-radius:50%;background:${k===helpStep?'var(--accent)':'var(--line)'}"></span>`).join('')}</div>
+ <div class="frow" style="justify-content:space-between;margin-top:12px"><button class="btn ghost sm" data-act="hskip">Passer</button><span style="flex:1"></span><button class="btn" data-act="hprev"${helpStep===0?' disabled':''}>Précédent</button><button class="btn pri" data-act="hnext">${last?'Terminer':'Suivant'}</button></div>`)}
+function resetModal(){
+ if(!S.audits.length){toast('Rien à effacer');return}
+ openModal(`<h2>Repartir d'une feuille blanche ?</h2>
+ <p style="color:var(--mute);margin:0 0 6px">Tous les audits chargés, le plan d'actions (statuts, responsables, actions, photos), les points épinglés et le one-pager seront effacés de cette page. Avez-vous bien enregistré votre session ? Cette action est définitive.</p>
+ <label style="display:flex;gap:9px;align-items:flex-start;margin:16px 0 2px;font-size:13px;color:var(--mute)"><input type="checkbox" id="rBrand" style="margin-top:3px"> <span>Réinitialiser aussi l'identité visuelle (nom, logo, couleur, objectif)</span></label>
+ <div id="rmsg" style="font-size:12.5px;color:var(--ok);min-height:18px;margin-top:8px"></div>
+ <div class="frow" style="justify-content:flex-end;margin-top:10px"><button class="btn" data-act="rsave">Enregistrer la session d'abord</button><button class="btn" data-act="mclose">Annuler</button><button class="btn" data-act="rgo" style="background:var(--nc);border-color:var(--nc);color:#fff">Tout effacer</button></div>`)}
+function resetAll(withBrand){
+ S.audits=[];S.ann={};S.sel=new Set();S.tpl=null;S.sec=null;S.ncq='';S.ncst='all';S.open=null;S.view='dash';S.op=OP_DEF();
+ if(withBrand)S.brand=BRAND_DEF();
+ closeModal();render();
+ if(withBrand)LS.remove('ai_brand');
+ toast('Projet réinitialisé : feuille blanche')}
+
 /* ===== Rendu & événements ===== */
 function emptyNav(){return!S.audits.length}
 const TITLES={dash:'Tableau de bord',audits:'Audits chargés',nc:'Non-conformités & plan d\'actions',op:'One-pager'};
@@ -673,8 +707,8 @@ function render(){
  const b=S.brand;
  $('#app').innerHTML=`<div class="shell"><aside class="side"><div class="brandbox${b.logo&&b.logo.startsWith('data:image/svg')?' w':''}"><div class="logo">${b.logo?`<img src="${b.logo}">`:esc((b.name||'?')[0].toUpperCase())}</div><div><b>${esc(b.name)}</b><small>Suivi des audits</small></div></div>
  <nav class="nav">${[['dash','dash','Tableau de bord'],['audits','file','Audits'],['nc','alert','Non-conformités'],['op','page','One-pager']].map(n=>`<button class="${S.view===n[0]?'on':''}" data-act="nav" data-v="${n[0]}">${icon(n[1])}${n[2]}${n[0]==='nc'&&nNC?`<span class="badge">${nNC}</span>`:''}</button>`).join('')}</nav>
- <div class="sidefoot"><button data-act="pick">${icon('upload')}Ajouter des fichiers</button><button data-act="savesess">${icon('save')}Enregistrer la session</button><button data-act="loadsess">${icon('file')}Ouvrir une session</button><button data-act="brand">${icon('gear')}Identité visuelle</button><button data-act="theme">${icon(S.theme==='dark'?'sun':'moon')}Thème ${S.theme==='dark'?'clair':'sombre'}</button></div></aside>
- <main class="main"><div class="top"><h1>${TITLES[S.view]}</h1><span class="sp"></span>${S.audits.length&&S.view!=='op'?`<button class="btn pri" data-act="pick">${icon('plus',15)} Ajouter des audits</button>`:''}${S.view==='op'?'':''}</div><div class="content" id="content">${views[S.view]()}</div></main></div>`;
+ <div class="sidefoot"><button data-act="pick">${icon('upload')}Ajouter des fichiers</button><button data-act="savesess">${icon('save')}Enregistrer la session</button><button data-act="loadsess">${icon('file')}Ouvrir une session</button><button data-act="brand">${icon('gear')}Identité visuelle</button><button data-act="theme">${icon(S.theme==='dark'?'sun':'moon')}Thème ${S.theme==='dark'?'clair':'sombre'}</button><button data-act="reset" style="color:var(--nc);margin-top:6px"${S.audits.length?'':' disabled title="Rien à effacer"'}>${icon('trash')}Nouveau projet (tout effacer)</button></div></aside>
+ <main class="main"><div class="top"><h1>${TITLES[S.view]}</h1><span class="sp"></span>${S.audits.length&&S.view!=='op'?`<button class="btn pri" data-act="pick">${icon('plus',15)} Ajouter des audits</button>`:''}<button class="btn ghost helpbtn" data-act="help" aria-label="Aide" data-tip="Aide">?</button></div><div class="content" id="content">${views[S.view]()}</div></main></div>`;
  fitSheet();scrollTo(0,y)}
 function rerenderKeep(){render()}
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),3600)}
@@ -701,8 +735,15 @@ document.addEventListener('click',e=>{
   case'blk':S.op.blocks[v]=!S.op.blocks[v];render();break;
   case'exp':doExport(v);break;
   case'theme':S.theme=S.theme==='dark'?'light':'dark';render();break;
+  case'reset':resetModal();break;
+  case'rsave':saveSession();{const m=$('#rmsg');if(m)m.textContent='Session enregistrée. Vous pouvez maintenant tout effacer.'}break;
+  case'rgo':resetAll(!!$('#rBrand')?.checked);break;
+  case'help':helpModal(0);break;
+  case'hprev':helpModal(helpStep-1);break;
+  case'hnext':if(helpStep>=HELP.length-1){helpSeen();helpOpen=false;closeModal()}else helpModal(helpStep+1);break;
+  case'hskip':helpSeen();helpOpen=false;closeModal();break;
   case'brand':brandModal();break;
-  case'mclose':closeModal();break;
+  case'mclose':dismissModal();break;
   case'savesess':saveSession();break;
   case'loadsess':{const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=()=>i.files[0]&&loadSession(i.files[0]);i.click();break}
   case'logopick':{const i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=async()=>{const f=i.files[0];if(!f)return;const d=await resizeImg(f,500);
@@ -735,6 +776,7 @@ document.addEventListener('drop',e=>{e.preventDefault();dcount=0;veil.classList.
  const z=e.target.closest('[data-dropfid]');if(z){addPhotos(z.dataset.dropfid,e.dataTransfer.files);return}
  if(e.dataTransfer.files.length)handleFiles(e.dataTransfer.files)});
 addEventListener('resize',fitSheet);
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')dismissModal()});
 render();
+if(!LS.get('ai_seen_help',null))helpModal(0);
 </script></body></html>
