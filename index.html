@@ -310,15 +310,16 @@ const INFO_SEC=/^(ent[eê]te|en-?t[eê]te|header|title page|page de titre|untitl
 let STATUSMAP=LS.get('ai_statusmap',{})||{};
 let CHOICE_VALUES=[],UNKNOWN_VALUES=[],RAW=[];
 function cleanHeader(h){return String(h==null?'':h).replace(/\u00a0/g,' ').trim()}
+const EXACT_ROOTS=new Set(['non','bad','use','us','ok','ko','hs','nc','no','si']);
 function matchRoot(n,roots){
- return roots.some(r=>{const rx='([^a-z0-9]|^)'+r.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+(r.length<=2||/\s/.test(r)?'([^a-z0-9]|$)':'');return new RegExp(rx,'i').test(n)})
+ return roots.some(r=>{const rx='([^a-z0-9]|^)'+r.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+(EXACT_ROOTS.has(r)||r.length<=2||/\s/.test(r)?'([^a-z0-9]|$)':'');return new RegExp(rx,'i').test(n)})
 }
 function autoStatus(v){
  const n=norm(v);if(!n)return null;
- if(/^(n\/a|n\.a\.|na|non applicable|sans objet|non audite|not applicable)$/.test(n))return'NA';
- if(matchRoot(n,['cass','importan','mauvais','defect','hors service','hs','critique','majeur','non conforme','nc','non','ko','fail','poor','insatisf','sale','absent']))return'NC';
- if(matchRoot(n,['fissur','us','use','moyen','partiel','surveill','a ameliorer','a corriger','amelior','mineur','leger','fair','observation']))return'OBS';
- if(matchRoot(n,['bon','ok','conforme','satisf','propre','oui','good','pass','valide','ras']))return'C';
+ if(/^(n\/a|n\.a\.?|na|non applicable|sans objet|non audite|not applicable|no aplica)[.!]?$/.test(n))return'NA';
+ if(matchRoot(n,['cass','importan','mauvais','defect','hors service','hs','critique','majeur','non conforme','non-compliant','noncompliant','nc','non','no','false','ko','fail','poor','unsatisf','sale','absent','bad','no cumple','malo']))return'NC';
+ if(matchRoot(n,['fissur','us','use','moyen','partiel','partial','surveill','a ameliorer','a corriger','amelior','mineur','minor','leger','fair','observation','needs improvement','regular']))return'OBS';
+ if(matchRoot(n,['bon','ok','conforme','compliant','satisf','propre','oui','yes','true','good','pass','valide','ras','excellent','acceptable','si','buen','cumple']))return'C';
  return null;
 }
 function isMapped(v){const k=norm(v);return!!k&&Object.prototype.hasOwnProperty.call(STATUSMAP,k)}
