@@ -20,7 +20,7 @@ Application web autonome (un seul fichier HTML) pour analyser des exports d'audi
 
 ## Utilisation
 
-Ouvrir `index.html` (ou `dashboard.html`) dans Edge/Chrome → glisser un ou plusieurs exports Excel Safety Culture → le tableau de bord se construit automatiquement.
+Ouvrir `index.html` dans Edge/Chrome → glisser un ou plusieurs exports Excel Safety Culture → le tableau de bord se construit automatiquement.
 
 ## Déploiement (Netlify)
 
@@ -30,7 +30,7 @@ Ouvrir `index.html` (ou `dashboard.html`) dans Edge/Chrome → glisser un ou plu
 
 ## Fichiers
 
-- `index.html` / `dashboard.html` : application (copie identique).
+- `index.html` : application complète, autonome.
 - `netlify.toml` : config Netlify.
 - `.gitignore` : exclut les fichiers de travail locaux.
 
@@ -38,5 +38,4 @@ Ouvrir `index.html` (ou `dashboard.html`) dans Edge/Chrome → glisser un ou plu
 
 - Ne pas réduire l'application à un profilage générique : conserver le parseur Safety Culture dédié et les 4 vues.
 - Ne pas ajouter de framework ni d'appel serveur.
-- Ne pas committer de données d'audit réelles.
-- `dashboard.html` doit rester une copie identique de `index.html`.
+- Ne pas committer de données d'audit réelles : les exports sont ignorés par `.gitignore`.
